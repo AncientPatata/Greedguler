@@ -8,4 +8,7 @@
 - Implement the greedy algorithm
 - Load the data into the program (passed in as commandline arguments alongside the number of machines)
 
+#### Before next week's presentation:
+
 - Look into parallelization
+- Try to formalize the problem for our specific algorithm
