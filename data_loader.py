@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from networkx.drawing.nx_pydot import graphviz_layout
 import random
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def generate_random_dag(num_nodes, max_duration):
     # Create a directed acyclic graph (DAG)
@@ -37,7 +37,8 @@ def load_dag_from_json(filepath):
     with open(filepath, "r") as file_handle:
         object_data = json.load(file_handle)
         nodes:dict = object_data["nodes"]
-        node_indices = [int(k) for (k,v) in nodes.items()]
+        #node_indices = [(int(k), {"duration":datetime.strptime(v["Data"][:-1], "%H:%M:%S.%f")} ) for (k,v) in nodes.items()]
+        node_indices = [(int(k), {"duration":timedelta(hours=int(time_parts[0]), minutes=int(time_parts[1]), seconds=float(time_parts[2]))} ) for (k,v) in nodes.items() if (time_parts:=v["Data"].split(':'))]
         edges = []
         for (k,v) in nodes.items():
             for dep in v["Dependencies"]:
@@ -48,10 +49,13 @@ def load_dag_from_json(filepath):
     return graph
         
 
-# Example usage
-num_nodes = 7
-max_duration = 5
+if __name__ == "__main__":
 
-#dag = generate_random_dag(num_nodes, max_duration)
-dag = load_dag_from_json("./smallComplex.json")
-plot_dag(dag)
+    # Example usage
+    num_nodes = 7
+    max_duration = 5
+
+    #dag = generate_random_dag(num_nodes, max_duration)
+    dag = load_dag_from_json("./smallComplex.json")
+    # print(nx.get_node_attributes(dag,"duration"))
+    #plot_dag(dag)

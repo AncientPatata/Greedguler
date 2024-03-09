@@ -1,3 +1,6 @@
+import networkx as nx
+from datetime import datetime, timedelta
+
 def allocate_jobs_to_machines(job_durations, num_machines):
     # Initialize machines as empty lists
     machines = [[] for _ in range(num_machines)]
@@ -30,20 +33,43 @@ def pretty_print_allocated_jobs(machines):
         print(f"Machine {i + 1}:", end=' ')
 
         for job in machine_jobs:
-            duration = job['duration']
-            bar = '*' * duration
+            duration:timedelta = job['duration']
+            bar = '*' * int(duration.total_seconds()/60)
             print(f"[{bar:^{duration}}]", end='')
 
         # Fill the remaining time with spaces
         remaining_space = max_end_time - machine_jobs[-1]['end_time']
         print(f"[{' ':^{remaining_space}}]")
 
-# Example usage
-job_durations = [4, 2, 5, 3, 7, 9,1]
-result = allocate_jobs_to_machines(job_durations, 4)
 
-# Display the allocated jobs for each machine
-for i, machine_jobs in enumerate(result):
-    print(f"Machine {i + 1}: {machine_jobs}")
+def allocate_jobs_to_machines_mod(graph: nx.DiGraph, num_machines = 8):
+    machines = [[] for _ in range(num_machines)]
+    queue = [n[0] for n in graph.in_degree if n[1] == 0]
+    while len(queue) > 0:
+        jobs_sorted = sorted(queue, key=lambda x: nx.get_node_attributes(graph, "duration")[x])
+        
+        max_end_time = max([machine[-1]['end_time'] for machine in machines if machine], default=0)
+        for job in jobs_sorted:
+            min_end_time_machine = min(machines, key=lambda machine: (machine[-1]['end_time'] if machine else 0))
+            duration:timedelta = nx.get_node_attributes(graph, "duration")[job]
+            start_time = max_end_time 
+            end_time = start_time + duration.total_seconds()
+            machines[machines.index(min_end_time_machine)].append({'start_time': start_time, 'end_time': end_time, 'duration':duration, 'job_index': job})
+        
+        graph.remove_nodes_from(queue)
+        graph.remove_edges_from([edge for edge in graph.edges if edge[0] in queue])
+        queue = [n[0] for n in graph.in_degree if n[1] == 0]
+    
+    return machines
+        
+        
+if __name__ == "__main__":
+    # Example usage
+    job_durations = [4, 2, 5, 3, 7, 9,1]
+    result = allocate_jobs_to_machines(job_durations, 4)
 
-pretty_print_allocated_jobs(result)
+    # Display the allocated jobs for each machine
+    for i, machine_jobs in enumerate(result):
+        print(f"Machine {i + 1}: {machine_jobs}")
+
+    pretty_print_allocated_jobs(result)
