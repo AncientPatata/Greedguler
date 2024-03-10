@@ -1,2 +1,4 @@
 rustworkx
 argparse
+plotly
+pandas

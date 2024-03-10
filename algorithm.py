@@ -54,7 +54,7 @@ def allocate_jobs_to_machines_mod(graph: nx.DiGraph, num_machines = 8):
             duration:timedelta = nx.get_node_attributes(graph, "duration")[job]
             start_time = max_end_time 
             end_time = start_time + duration.total_seconds()
-            machines[machines.index(min_end_time_machine)].append({'start_time': start_time, 'end_time': end_time, 'duration':duration, 'job_index': job})
+            machines[machines.index(min_end_time_machine)].append({'start_time': start_time, 'end_time': end_time, 'duration':end_time-start_time, 'job_index': job})
         
         graph.remove_nodes_from(queue)
         graph.remove_edges_from([edge for edge in graph.edges if edge[0] in queue])
