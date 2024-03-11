@@ -2,3 +2,5 @@ rustworkx
 argparse
 plotly
 pandas
+dash
+dash-cytoscape
