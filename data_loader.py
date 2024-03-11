@@ -11,7 +11,7 @@ def generate_random_dag(num_nodes, max_duration):
 
     # Add nodes to the graph
     for i in range(num_nodes):
-        dag.add_node(i, duration=random.randint(1, max_duration))
+        dag.add_node(i, duration=timedelta(seconds=random.randint(1, max_duration)))
 
     # Add edges to create a DAG
     for i in range(num_nodes - 1):
