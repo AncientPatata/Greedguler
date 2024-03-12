@@ -61,15 +61,95 @@ def allocate_jobs_to_machines_mod(graph: nx.DiGraph, num_machines = 8):
         queue = [n[0] for n in graph.in_degree if n[1] == 0]
     
     return machines
-        
-        
-if __name__ == "__main__":
-    # Example usage
-    job_durations = [4, 2, 5, 3, 7, 9,1]
-    result = allocate_jobs_to_machines(job_durations, 4)
+    
+    
+def allocate_jobs_to_machines_with_heuristic(graph: nx.DiGraph, num_machines=8):
+    man_graph = graph.copy()
+    machines = [[] for _ in range(num_machines)]
+    queue = [n[0] for n in man_graph.in_degree if n[1] == 0]
+    free_time = [0] * num_machines
+    # Calculate critical path
+    critical_path = nx.dag_longest_path(man_graph, weight='duration')
 
-    # Display the allocated jobs for each machine
-    for i, machine_jobs in enumerate(result):
-        print(f"Machine {i + 1}: {machine_jobs}")
+    while len(queue) > 0:
+        # Sort the jobs in the queue based on the critical path
+        jobs_sorted = sorted(queue, key=lambda x: critical_path.index(x) if x in critical_path else float('inf'))
 
-    pretty_print_allocated_jobs(result)
+
+        for job in jobs_sorted:
+            machine = min(range(len(machines)), key=lambda machine: free_time[machine])
+            duration = nx.get_node_attributes(man_graph, "duration")[job]
+            earliest_start_time_for_job = earliest_start_time(job, graph, machines)
+            start_time = max([free_time[machine], earliest_start_time_for_job])
+            end_time = start_time + duration.total_seconds()
+            machines[machine].append({'start_time': start_time, 'end_time': end_time,
+                                                                   'duration': end_time - start_time, 'job_index': job})
+            free_time[machine] = end_time
+            #print(free_time)
+            #print("EST : ", earliest_start_time_for_job)
+
+        man_graph.remove_nodes_from(queue)
+        man_graph.remove_edges_from([edge for edge in man_graph.edges if edge[0] in queue])
+        queue = [n[0] for n in man_graph.in_degree if n[1] == 0]
+
+    return machines
+
+### TODO: Delete later
+
+
+def heft(graph: nx.DiGraph, num_machines: int):
+    tasks = list(graph.nodes)
+    ranks = calculate_ranks(graph)
+
+    # Initialize schedule and free times for each machine
+    schedule = [[] for _ in range(num_machines)]
+    free_time = [0] * num_machines
+
+    # Sort tasks by decreasing order of rank
+    sorted_tasks = sorted(tasks, key=lambda task: ranks[task], reverse=True)
+
+    # Iterate through sorted tasks and allocate to machines
+    for task in sorted_tasks:
+        machine = select_machine(task, schedule, free_time)
+        start_time = max([free_time[machine], earliest_start_time(task, graph, schedule)])
+        end_time = start_time + nx.get_node_attributes(graph, "duration")[task].total_seconds()
+        schedule[machine].append({'start_time': start_time, 'end_time': end_time, 'duration': end_time - start_time, 'job_index': task})
+        free_time[machine] = end_time
+
+    return schedule
+
+def earliest_start_time(task, graph, schedule):
+    # Calculate earliest start time for a task on a machine respecting dependencies
+    dependencies = list(graph.predecessors(task))
+    if not dependencies:
+        return 0
+    else:
+        max_end_time = max([job['end_time'] for machine_schedule in schedule for job in machine_schedule if job['job_index'] in dependencies])
+        return max_end_time
+
+def calculate_ranks(graph: nx.DiGraph):
+    ranks = {}
+    for task in nx.topological_sort(graph):
+        rank = calculate_rank(task, ranks, graph)
+        ranks[task] = rank
+    return ranks
+
+def calculate_rank(task, ranks, graph, memo={}):
+    if task in ranks:
+        return ranks[task]
+    elif task in memo:
+        return memo[task]
+    else:
+        successors = list(graph.successors(task))
+        if not successors:
+            return nx.get_node_attributes(graph, "duration")[task]
+        else:
+            max_rank = max(calculate_rank(succ, ranks, graph, memo) for succ in successors)
+            rank = nx.get_node_attributes(graph, "duration")[task] + max_rank
+            memo[task] = rank  # Memoize the rank for this task
+            return rank
+
+def select_machine(task, schedule, free_time):
+    # Dummy function for machine selection
+    # You can implement a more sophisticated strategy based on machine capabilities
+    return min(range(len(schedule)), key=lambda machine: free_time[machine])
