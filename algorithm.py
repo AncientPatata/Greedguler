@@ -80,6 +80,7 @@ def allocate_jobs_to_machines_with_heuristic(graph: nx.DiGraph, num_machines=8):
             machine = min(range(len(machines)), key=lambda machine: free_time[machine])
             duration = nx.get_node_attributes(man_graph, "duration")[job]
             earliest_start_time_for_job = earliest_start_time(job, graph, machines)
+            # do machine choice after (by also taking into account how far back we can go)
             start_time = max([free_time[machine], earliest_start_time_for_job])
             end_time = start_time + duration.total_seconds()
             machines[machine].append({'start_time': start_time, 'end_time': end_time,

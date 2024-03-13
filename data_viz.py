@@ -12,6 +12,7 @@ from dash import html
 
 import algorithm
 import data_loader
+import verification
 from data_loader import load_dag_from_json
 import os
 
@@ -62,7 +63,7 @@ def elements_from_nx(graph):
 graph_file = 'test_graph.graphml'
 NUM_MACHINES = 3
 
-# # Check if the graph file exists
+# Check if the graph file exists
 # if os.path.exists(graph_file):
 #     # Load the existing graph
 #     dag = nx.read_graphml(graph_file)
@@ -73,7 +74,7 @@ NUM_MACHINES = 3
 #     print("Graph loaded from file.")
 # else:
 #     # Generate a new random DAG
-#     dag = data_loader.generate_random_dag(48, 100)
+#     dag = data_loader.generate_random_dag(48, 100, density_level=1)
 #     # Convert timedelta values to total seconds for 'duration' attribute
 #     for node, data in dag.nodes(data=True):
 #         if 'duration' in data:
@@ -82,17 +83,24 @@ NUM_MACHINES = 3
 #     nx.write_graphml(dag, graph_file)
 #     print("New graph generated and saved to file.")
 
-dag = data_loader.load_dag_from_json('smallComplex.json')
+dag = data_loader.load_dag_from_json('xsmallComplex.json')
 
 plotting_dag = dag.copy()
-schedule_1 = algorithm.allocate_jobs_to_machines_mod(plotting_dag.copy() ,num_machines=NUM_MACHINES)
+schedule_1 = algorithm.heft(plotting_dag.copy() ,num_machines=NUM_MACHINES)
 #print(schedule)
 with open("schedule_mod.json", "w") as file_handle:
     json.dump(schedule_1, file_handle)
 
-schedule_2 = algorithm.heft(plotting_dag.copy() ,num_machines=NUM_MACHINES)
+schedule_2 = algorithm.allocate_jobs_to_machines_with_heuristic(plotting_dag.copy() ,num_machines=NUM_MACHINES)
 with open("schedule_heu.json", "w") as file_handle:
     json.dump(schedule_2, file_handle)
+
+
+overlap_schedule_1 = verification.verifcation_overlap_machine(schedule_1)
+dependencies_schedule_1 = verification.verification_dependencies(plotting_dag, schedule_1)
+overlap_schedule_2 = verification.verifcation_overlap_machine(schedule_2)
+dependencies_schedule_2 = verification.verification_dependencies(plotting_dag, schedule_2)
+
 
 critical_path_duration:timedelta = timedelta(seconds=0)
 critical_path = nx.dag_longest_path(plotting_dag)
@@ -150,7 +158,13 @@ app.layout = html.Div([
         "CRITICAL PATH LENGTH" + str(critical_path_duration) + "\n" + 
         "EFFICACY (SRS) OF ALGO 1 : " + str(srs_1) + "\n" +
         "EFFICACY (SRS) OF ALGO 2 : " + str(srs_2) 
-    ])
+    ]),
+    html.Div([
+        "Schedule 1 : Overlap = " + str(overlap_schedule_1) + ", Dependency Constraints = " + str(dependencies_schedule_1)
+    ]),
+        html.Div([
+        "Schedule 2 : Overlap = " + str(overlap_schedule_2) + ", Dependency Constraints = " + str(dependencies_schedule_2)
+    ]),
 ])
 
 

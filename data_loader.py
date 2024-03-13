@@ -5,7 +5,7 @@ import random
 import json
 from datetime import datetime, timedelta
 
-def generate_random_dag(num_nodes, max_duration):
+def generate_random_dag(num_nodes, max_duration, density_level=2):
     # Create a directed acyclic graph (DAG)
     dag = nx.DiGraph()
 
@@ -16,7 +16,7 @@ def generate_random_dag(num_nodes, max_duration):
     # Add edges to create a DAG
     for i in range(num_nodes - 1):
         for j in range(i + 1, num_nodes):
-            if random.choice([True, False]):
+            if random.choice([True] + [False]*density_level):
                 dag.add_edge(i, j)
 
     return dag
