@@ -8,9 +8,6 @@ from data_loader import load_dag_from_json
 
 G = load_dag_from_json("./smallComplex.json")
 
-# print(G.nodes[2661]['durations'])
-# durations = [node[1]['duration']for node in G.nodes()]
-# print(max([node['duration']for node in G.nodes()]))
 
 def transform_node_to_edge(G):
     Gt = nx.DiGraph()
@@ -31,9 +28,8 @@ def transform_node_to_edge(G):
 
     return Gt
 
-
 Gt = transform_node_to_edge(G)
-print("Gt corresponds to a", Gt) 
+
 
 def total_weight(T):
     somme_timedelta = datetime.timedelta()
@@ -57,14 +53,17 @@ def critical_path(G):
 print("Le poids du chemin critique est", critical_path(G))
 
 
+
 def makespan(G, nombre_machine):
-    schedule = alg.allocate_jobs_to_machines_mod(G ,num_machines=nombre_machine)
+    A = G.copy()
+    schedule = alg.allocate_jobs_to_machines_mod(A ,num_machines=nombre_machine)
     pers_makespan = []
     for machine in schedule:
         pers_makespan.append(machine[-1]['end_time'])
     makespan = max(pers_makespan)
     return makespan
- 
+
+MSP = makespan(G, 3)
 
 def convertir_date(secondes):
     jours = secondes // (24 * 3600)
@@ -88,13 +87,11 @@ def critical_path(Gt):
 
 
 def SLR(G, nombre_machine):
-    Gt = transform_node_to_edge(G)
     MSP = makespan(G, nombre_machine)
-    critical_path = nx.dag_longest_path_length(Gt, weight='duration')
-    print("Le chemin critique est", critical_path)
-    return MSP / critical_path
+    crit_path = critical_path(G).total_seconds()
+    return MSP / crit_path
 
-# SLR(G, 3)
+print("Le SLR est de", SLR(G, 3))
 
 
 
