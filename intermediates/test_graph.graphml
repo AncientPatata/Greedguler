@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d0" for="node" attr.name="duration" attr.type="double"/>
+<graph edgedefault="directed"><node id="0">
+  <data key="d0">1.0</data>
+</node>
+<node id="1">
+  <data key="d0">3.0</data>
+</node>
+<node id="2">
+  <data key="d0">4.0</data>
+</node>
+<node id="3">
+  <data key="d0">13.0</data>
+</node>
+<node id="4">
+  <data key="d0">11.0</data>
+</node>
+<node id="5">
+  <data key="d0">18.0</data>
+</node>
+<node id="6">
+  <data key="d0">12.0</data>
+</node>
+<node id="7">
+  <data key="d0">12.0</data>
+</node>
+<node id="8">
+  <data key="d0">4.0</data>
+</node>
+<node id="9">
+  <data key="d0">4.0</data>
+</node>
+<edge source="0" target="3"/>
+<edge source="1" target="4"/>
+<edge source="1" target="5"/>
+<edge source="2" target="5"/>
+<edge source="2" target="8"/>
+<edge source="3" target="5"/>
+<edge source="7" target="8"/>
+</graph></graphml>

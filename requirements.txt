@@ -4,3 +4,4 @@ plotly
 pandas
 dash
 dash-cytoscape
+orjson # have to check if json loading is the performance bottleneck
