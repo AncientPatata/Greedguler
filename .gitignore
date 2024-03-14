@@ -163,3 +163,5 @@ cython_debug/
 
 data/xlargeComplex
 data/largeComplex
+data/largeComplex.json
+data/xlargeComplex.json
