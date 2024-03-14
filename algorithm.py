@@ -1,4 +1,5 @@
 import networkx as nx
+import rustworkx as rx
 from datetime import datetime, timedelta
 
 def allocate_jobs_to_machines(job_durations, num_machines):
@@ -62,11 +63,12 @@ def allocate_jobs_to_machines_mod(graph: nx.DiGraph, num_machines = 8):
     
     return machines
     
-    
+#@profile    
 def allocate_jobs_to_machines_with_heuristic(graph: nx.DiGraph, num_machines=8):
     man_graph = graph.copy()
     machines = [[] for _ in range(num_machines)]
     queue = [n[0] for n in man_graph.in_degree if n[1] == 0]
+    print("queue : ", queue)
     free_time = [0] * num_machines
     # Calculate critical path
     critical_path = nx.dag_longest_path(man_graph, weight='duration')
@@ -74,6 +76,7 @@ def allocate_jobs_to_machines_with_heuristic(graph: nx.DiGraph, num_machines=8):
     while len(queue) > 0:
         # Sort the jobs in the queue based on the critical path
         jobs_sorted = sorted(queue, key=lambda x: critical_path.index(x) if x in critical_path else float('inf'))
+        print("jobs_sorted : ", jobs_sorted)
 
 
         for job in jobs_sorted:
@@ -94,6 +97,61 @@ def allocate_jobs_to_machines_with_heuristic(graph: nx.DiGraph, num_machines=8):
         queue = [n[0] for n in man_graph.in_degree if n[1] == 0]
 
     return machines
+
+# TODO: Consider handling isolates separately 
+
+@profile
+def allocate_jobs_to_machines_with_heuristic_optimized(graph: nx.DiGraph,durations, num_machines=8):
+    man_graph = rx.networkx_converter(graph)
+    machines = [[] for _ in range(num_machines)]
+    queue = filter(lambda n: man_graph.in_degree(n) == 0, man_graph.node_indices())
+    print("queue : ", queue)
+    free_time = [0] * num_machines
+    # Calculate critical path
+    critical_path = rx.dag_weighted_longest_path(man_graph, weight_fn=lambda src, _, __: durations[man_graph.get_node_data(src)].total_seconds()) # I still need attributes for this piece
+
+    while True:
+        try:
+            element = next(queue)
+            # Sort the jobs in the queue based on the critical path
+            jobs_sorted = sorted(queue, key=lambda x: list(critical_path).index(x) if x in critical_path else float('inf'))
+            print("jobs_sorted : ", [man_graph.get_node_data(x) for x in jobs_sorted])
+
+            for job in jobs_sorted:
+                job_index = man_graph.get_node_data(job)
+                machine = min(range(len(machines)), key=lambda machine: free_time[machine])
+                duration = durations[job]
+                earliest_start_time_for_job = earliest_start_time_optimized(job, graph,machines)
+                # do machine choice after (by also taking into account how far back we can go)
+                start_time = max([free_time[machine], earliest_start_time_for_job])
+                end_time = start_time + duration.total_seconds()
+                machines[machine].append({'start_time': start_time, 'end_time': end_time,
+                                                                    'duration': end_time - start_time, 'job_index': job_index})
+                free_time[machine] = end_time
+                #print(free_time)
+                #print("EST : ", earliest_start_time_for_job)
+
+            man_graph.remove_nodes_from(queue)
+            man_graph.remove_edges_from(man_graph.filter_edges(lambda edge: edge[0] in queue))
+            queue = filter(lambda n: man_graph.in_degree(n) == 0, man_graph.node_indices())
+        except StopIteration:
+            break
+
+
+
+    return machines
+
+def earliest_start_time_optimized(task, graph, schedule):
+    # Calculate earliest start time for a task on a machine respecting dependencies
+    print("task : ", task)
+    print("schedule :", schedule) 
+    dependencies = list(graph.predecessors(task))
+    print(dependencies)
+    if not dependencies:
+        return 0
+    else:
+        max_end_time = max([job['end_time'] for machine_schedule in schedule for job in machine_schedule if job['job_index'] in dependencies])
+        return max_end_time
 
 ### TODO: Delete later
 
@@ -154,3 +212,18 @@ def select_machine(task, schedule, free_time):
     # Dummy function for machine selection
     # You can implement a more sophisticated strategy based on machine capabilities
     return min(range(len(schedule)), key=lambda machine: free_time[machine])
+
+
+
+# This is only here for use with kernprof line_profiler
+if __name__ == "__main__":
+    import data_loader
+    dag, durations = data_loader.load_dag_from_json("./data/xsmallComplex.json", rustwork=True)
+    # man_graph = rx.networkx_converter(dag)
+    # print(man_graph.get_node_data(1180))
+    # print(set(man_graph.nodes()).symmetric_difference(set(durations.keys())))
+    
+    schedule = allocate_jobs_to_machines_with_heuristic_optimized(dag, durations, num_machines=3)
+    #schedule = allocate_jobs_to_machines_with_heuristic(dag, num_machines=3)
+    
+    

@@ -1,4 +1,6 @@
 import networkx as nx
+import rustworkx as rx
+import orjson 
 import matplotlib.pyplot as plt
 from networkx.drawing.nx_pydot import graphviz_layout
 import random
@@ -33,15 +35,19 @@ def plot_dag(dag):
     #plt.savefig("dag.png")
     plt.show()
 
-def load_dag_from_json(filepath):
+def load_dag_from_json(filepath, rustwork = False):
+        
     print("Loading DAG from JSON file " + filepath + "....") #TODO: Custom logging with control of verbosity.
     start_time = timeit.default_timer()
+
     graph = nx.DiGraph()
+    durations = {}
     with open(filepath, "r") as file_handle:
         object_data = json.load(file_handle)
         nodes:dict = object_data["nodes"]
         #node_indices = [(int(k), {"duration":datetime.strptime(v["Data"][:-1], "%H:%M:%S.%f")} ) for (k,v) in nodes.items()]
         node_indices = [(int(k), {"duration":timedelta(hours=int(time_parts[0]), minutes=int(time_parts[1]), seconds=float(time_parts[2]))} ) for (k,v) in nodes.items() if (time_parts:=v["Data"].split(':'))]
+        durations = {int(k): timedelta(hours=int(time_parts[0]), minutes=int(time_parts[1]), seconds=float(time_parts[2])) for (k,v) in nodes.items() if (time_parts:=v["Data"].split(':'))}
         edges = []
         for (k,v) in nodes.items():
             for dep in v["Dependencies"]:
@@ -50,6 +56,9 @@ def load_dag_from_json(filepath):
         graph.add_edges_from(edges)
     elapsed = timeit.default_timer() - start_time
     print("Loading file took : ", elapsed) # TODO: timeit for JSON file loading
+    
+    if rustwork:
+        return graph, durations
     
     return graph
         
