@@ -53,10 +53,9 @@ def critical_path(G):
 print("Le poids du chemin critique est", critical_path(G))
 
 
-
 def makespan(G, nombre_machine):
     A = G.copy()
-    schedule = alg.allocate_jobs_to_machines_mod(A ,num_machines=nombre_machine)
+    schedule = alg.allocate_jobs_to_machines_with_heuristic(A ,num_machines=nombre_machine)
     pers_makespan = []
     for machine in schedule:
         pers_makespan.append(machine[-1]['end_time'])
