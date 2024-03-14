@@ -4,6 +4,7 @@ from networkx.drawing.nx_pydot import graphviz_layout
 import random
 import json
 from datetime import datetime, timedelta
+import timeit
 
 def generate_random_dag(num_nodes, max_duration, density_level=2):
     # Create a directed acyclic graph (DAG)
@@ -33,6 +34,8 @@ def plot_dag(dag):
     plt.show()
 
 def load_dag_from_json(filepath):
+    print("Loading DAG from JSON file " + filepath + "....") #TODO: Custom logging with control of verbosity.
+    start_time = timeit.default_timer()
     graph = nx.DiGraph()
     with open(filepath, "r") as file_handle:
         object_data = json.load(file_handle)
@@ -45,7 +48,9 @@ def load_dag_from_json(filepath):
                 edges.append((dep, int(k)))
         graph.add_nodes_from(node_indices)
         graph.add_edges_from(edges)
-        
+    elapsed = timeit.default_timer() - start_time
+    print("Loading file took : ", elapsed) # TODO: timeit for JSON file loading
+    
     return graph
         
 
