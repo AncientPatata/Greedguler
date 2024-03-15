@@ -1,5 +1,6 @@
 import networkx as nx
 from datetime import datetime, timedelta
+import polars as pl
 
 def allocate_jobs_to_machines(job_durations, num_machines):
     # Initialize machines as empty lists
@@ -62,36 +63,42 @@ def allocate_jobs_to_machines_mod(graph: nx.DiGraph, num_machines = 8):
     
     return machines
     
-    
+@profile
 def allocate_jobs_to_machines_with_heuristic(graph: nx.DiGraph, num_machines=8):
-    man_graph = graph.copy()
-    machines = [[] for _ in range(num_machines)]
+    man_graph:nx.DiGraph = graph.copy()
+    machines:pl.DataFrame = pl.DataFrame(schema={"machine": pl.UInt8,"start_time": pl.Float32, "end_time": pl.Float32, "job_index": pl.UInt16 })
     queue = [n[0] for n in man_graph.in_degree if n[1] == 0]
     free_time = [0] * num_machines
     # Calculate critical path
     critical_path = nx.dag_longest_path(man_graph, weight='duration')
 
     while len(queue) > 0:
-        # Sort the jobs in the queue based on the critical path
-        jobs_sorted = sorted(queue, key=lambda x: critical_path.index(x) if x in critical_path else float('inf'))
+            # Sort the jobs in the queue based on the critical path
+            jobs_sorted = sorted(queue, key=lambda x: critical_path.index(x) if x in critical_path else float('inf'))
+            jobs_dict = []
+            for job in jobs_sorted:
+                machine = min(range(len(free_time)), key=lambda machine: free_time[machine]) # it can still use the old machines dataframe because new jobs in queue independent from each other 
+                duration = man_graph.nodes[job]["duration"]
+                earliest_start_time_for_job = earliest_start_time(job, graph, machines)
 
+                # do machine choice after (by also taking into account how far back we can go)
+                start_time = max([free_time[machine], earliest_start_time_for_job])
+                end_time = start_time + duration.total_seconds()
 
-        for job in jobs_sorted:
-            machine = min(range(len(machines)), key=lambda machine: free_time[machine])
-            duration = nx.get_node_attributes(man_graph, "duration")[job]
-            earliest_start_time_for_job = earliest_start_time(job, graph, machines)
-            # do machine choice after (by also taking into account how far back we can go)
-            start_time = max([free_time[machine], earliest_start_time_for_job])
-            end_time = start_time + duration.total_seconds()
-            machines[machine].append({'start_time': start_time, 'end_time': end_time,
-                                                                   'duration': end_time - start_time, 'job_index': job})
-            free_time[machine] = end_time
-            #print(free_time)
-            #print("EST : ", earliest_start_time_for_job)
+                jobs_dict.append({
+                    "machine": machine,
+                    "start_time": start_time,
+                    "end_time": end_time,
+                    "job_index": job
+                })
 
-        man_graph.remove_nodes_from(queue)
-        man_graph.remove_edges_from([edge for edge in man_graph.edges if edge[0] in queue])
-        queue = [n[0] for n in man_graph.in_degree if n[1] == 0]
+                free_time[machine] = end_time
+
+            man_graph.remove_nodes_from(queue)
+            man_graph.remove_edges_from(man_graph.out_edges(queue))
+            queue = [n[0] for n in man_graph.in_degree if n[1] == 0]
+            new_jobs = pl.DataFrame(jobs_dict, schema={"machine": pl.UInt8,"start_time": pl.Float32, "end_time": pl.Float32, "job_index": pl.UInt16 })
+            machines.vstack(new_jobs, in_place=True)
 
     return machines
 
@@ -119,14 +126,21 @@ def heft(graph: nx.DiGraph, num_machines: int):
 
     return schedule
 
-def earliest_start_time(task, graph, schedule):
+@profile
+def earliest_start_time(task, graph, schedule: pl.DataFrame):
     # Calculate earliest start time for a task on a machine respecting dependencies
     dependencies = list(graph.predecessors(task))
     if not dependencies:
         return 0
     else:
-        max_end_time = max([job['end_time'] for machine_schedule in schedule for job in machine_schedule if job['job_index'] in dependencies])
-        return max_end_time
+        dependency_jobs = schedule.filter(pl.col("job_index").is_in(dependencies))
+        if dependency_jobs.is_empty():
+            return 0
+        else:
+            max_end_time = dependency_jobs.select(pl.max("end_time")).item()
+            return max_end_time
+        
+        
 
 def calculate_ranks(graph: nx.DiGraph):
     ranks = {}
@@ -154,3 +168,9 @@ def select_machine(task, schedule, free_time):
     # Dummy function for machine selection
     # You can implement a more sophisticated strategy based on machine capabilities
     return min(range(len(schedule)), key=lambda machine: free_time[machine])
+
+if __name__ == "__main__":
+    import data_loader
+    dag = data_loader.load_dag_from_json("./data/smallComplex.json")
+    
+    schedule = allocate_jobs_to_machines_with_heuristic(dag, num_machines=3)
