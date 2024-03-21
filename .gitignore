@@ -165,3 +165,9 @@ data/xlargeComplex
 data/largeComplex
 data/largeComplex.json
 data/xlargeComplex.json
+py_proj/data/xsmallComplex.json
+py_proj/data/xlargeComplex.json
+py_proj/data/smallRandom.json
+py_proj/data/smallComplex.json
+py_proj/data/MediumComplex.json
+py_proj/data/largeComplex.json
