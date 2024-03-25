@@ -1,4 +1,5 @@
 import networkx as nx
+import rustworkx as rx
 from datetime import datetime, timedelta
 
 def allocate_jobs_to_machines(job_durations, num_machines):
@@ -97,6 +98,65 @@ def allocate_jobs_to_machines_with_heuristic(graph: nx.DiGraph, num_machines=8):
 
 ### TODO: Delete later
 
+@profile
+def leveled_topological_sort(graph: rx.PyDiGraph):
+    node_queue = [[n for n in graph.node_indices() if graph.in_degree(n) == 0]]
+    not_done= True 
+    while not_done:
+        successors = []
+        out_edges = []
+        for q in node_queue:
+            for n in graph.successor_indices(q):
+                out_edges.append((q,n))
+                successors.append(n)
+        successors = set(successors)
+        
+        graph.remove_edges_from(out_edges)
+        graph.remove_nodes_from(node_queue)
+
+        node_queue = [n for n in successors if graph.in_degree(n) == 0]
+
+# @profile
+# def allocate_jobs_to_machines_with_heuristic_rx(graph: (rx.PyDiGraph, dict), num_machines=8):
+#     man_graph = graph[0].copy()
+#     durations = graph[1]
+#     jobs = {}
+#     queue = [n for n in man_graph.node_indices() if man_graph.in_degree(n) == 0]
+
+#     free_time = [0] * num_machines
+
+    
+#     while len(queue) > 0:
+#         for job in queue:
+#             job_index = man_graph.get_node_data(job)
+#             # print("Job : ", job)
+#             machine = min(range(num_machines), key=lambda machine: free_time[machine])
+#             duration = durations[job_index]
+#             earliest_start_time_for_job = earliest_start_time_optimized(job, graph[0],jobs) #todo
+#             # do machine choice after (by also taking into account how far back we can go)
+#             start_time = max([free_time[machine], earliest_start_time_for_job])
+#             end_time = start_time + duration.total_seconds()
+#             jobs[job_index] = {'start_time': start_time, 'end_time': end_time,
+#                                                                 'duration': end_time - start_time, 'machine_index': machine}
+#             free_time[machine] = end_time
+
+#         # TODO: Do this but for this 
+#         successors = []
+#         out_edges = []
+#         for q in queue:
+#             for n in man_graph.successor_indices(q):
+#                 out_edges.append((q,n))
+#                 successors.append(n)
+#         successors = set(successors)
+        
+#         man_graph.remove_edges_from(out_edges)
+#         man_graph.remove_nodes_from(queue)
+#         # print("QUEUE: ", queue)
+#         # def edge_filter(edge):
+#         #     print("EDGE: ", edge)
+#         #     return edge[0] in queue
+
+#         queue = [n for n in successors if man_graph.in_degree(n) == 0]
 
 def heft(graph: nx.DiGraph, num_machines: int):
     tasks = list(graph.nodes)
