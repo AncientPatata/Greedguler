@@ -3,3 +3,16 @@
 {"machine": 1, "message": "Test"}
 {"machine": 0, "message": "Test"}
 {"machine": 0, "message": "Total sum is 3"}
+{"machine": 1, "message": "Test"}
+{"machine": 0, "message": "Test"}
+{"machine": 0, "message": "Total sum is 3"}
+{"machine": 1, "message": "Test"}
+{"machine": 0, "message": "Test"}
+{"machine": 1, "message": "Started work"}
+{"machine": 0, "message": "Started work"}
+{"machine": 1, "message": "Started work"}
+{"machine": 0, "message": "Started work"}
+{"machine": 1, "message": "Started work"}
+{"machine": 0, "message": "Started work"}
+{"machine": 1, "message": "Started work"}
+{"machine": 0, "message": "Started work"}
