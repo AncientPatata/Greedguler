@@ -1,0 +1,5 @@
+{"machine": 1, "message": "TEST"}
+{"machine": 1, "message": "Test"}
+{"machine": 1, "message": "Test"}
+{"machine": 0, "message": "Test"}
+{"machine": 0, "message": "Total sum is 3"}
