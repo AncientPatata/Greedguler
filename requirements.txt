@@ -7,3 +7,4 @@ dash
 dash-cytoscape
 azure-batch
 ngrok
+azure-storage-blob
