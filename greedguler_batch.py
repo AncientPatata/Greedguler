@@ -158,7 +158,7 @@ if __name__ == "__main__":
                                     )
     parser.add_argument('--job_id', help='Id of job', dest='job_id', default="GreedgulerJob3")
     parser.add_argument('--task_id', help='Id of task', dest='task_id', default='GreedgulerTask0')
-    parser.add_argument('--pool_id', help='Id of pool', dest='task_id', default='GreedgulerPool3')
+    parser.add_argument('--pool_id', help='Id of pool', dest='pool_id', default='GreedgulerPool3')
     parser.add_argument('--new_job', help='Id of new job to create', dest='new_job')
     parser.add_argument('--new_pool', help='Id of new pool to create', dest='new_pool')
     

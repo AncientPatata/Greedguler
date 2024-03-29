@@ -1,1 +1,5 @@
-{"machine": 1, "message": "TEST"}
+{"machine": 1, "message": "Loading DAG from JSON file /mnt/batch/tasks/shared/Graphs/smallComplex.json...."}
+{"machine": 3, "message": "Loading DAG from JSON file /mnt/batch/tasks/shared/Graphs/smallComplex.json...."}
+{"machine": 2, "message": "Loading DAG from JSON file /mnt/batch/tasks/shared/Graphs/smallComplex.json...."}
+{"machine": 0, "message": "Loading DAG from JSON file /mnt/batch/tasks/shared/Graphs/smallComplex.json...."}
+{"machine": 0, "message": "Started work at graph /mnt/batch/tasks/shared/Graphs/smallComplex.json"}

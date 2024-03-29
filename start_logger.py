@@ -11,6 +11,7 @@ log_file_path = "server_log.json"
 @app.route('/log', methods=['POST'])
 def log_data():
     data = request.json
+    print(f"[MACHINE {data['machine']} ] ==> {data['message']}")
     with open(log_file_path, 'a') as log_file:
         json.dump(data, log_file)
         log_file.write('\n')
@@ -36,4 +37,4 @@ PORT = 5020
 
 if __name__ == "__main__":
     start_ngrok(port=PORT)
-    app.run(debug=False, use_reloader=False, port=PORT)
+    app.run(debug=True, use_reloader=False, port=PORT)
