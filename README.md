@@ -30,6 +30,9 @@ cd Greedguler
 pip install -r requirements.txt
 ```
 
+If you want to use logging, you need to add your `NGROK_AUTHTOKEN` to your config file.
+Moreover, you need to replace the backblaze API id and API key in the [https://github.com/AncientPatata/azure_batch_greedguler/](Asure batch repo) with your own (I only put in some mock ones).
+
 ## Usage
 
 ### `greedguler.py`
