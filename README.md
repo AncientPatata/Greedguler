@@ -35,6 +35,8 @@ Moreover, you need to replace the backblaze API id and API key in the [https://g
 
 ## Usage
 
+There is [https://greedguler.readthedocs.io/en/latest/index.html](full documentation) for the codebase. We will now go over the different files that you can run and the commandline arguments.
+
 ### `greedguler.py`
 
 This script schedules tasks across different machines using a greedy algorithm approach.
