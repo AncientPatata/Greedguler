@@ -8,15 +8,13 @@ from datetime import datetime, timedelta
 def pretty_print_allocated_jobs(machines):
     """
     Prints a visual representation of job allocations across multiple machines.
-
     Each machine's allocated jobs are displayed as bars, where the length of the bar
     represents the job's duration. The output is designed to give a quick visual overview
     of the workload distribution among the machines.
 
-    Parameters:
+    Args:
     - machines (list of lists of dicts): A nested list where each sublist represents a machine
-      and contains dictionaries with job details, including 'end_time' and 'duration' keys.
-
+    and contains dictionaries with job details, including 'end_time' and 'duration' keys.
     Returns:
     - None: This function prints the job allocations to stdout and does not return any value.
     """
@@ -45,13 +43,11 @@ def allocate_jobs_to_machines_nx(graph: nx.DiGraph, num_machines=8):
     This function attempts to optimize job allocation by considering the critical path and
     job dependencies to minimize overall completion time across a specified number of machines.
 
-    Parameters:
+    Args:
     - graph (nx.DiGraph): A directed graph where nodes represent jobs, and edges represent dependencies.
     - num_machines (int, optional): The number of machines available for job allocation. Defaults to 8.
-
     Returns:
-    - machines (list of lists of dicts): A nested list where each sublist represents the allocation
-      of jobs to a machine. Each job is represented as a dictionary containing 'start_time', 'end_time',
+    - machines (list of lists of dicts): A nested list where each sublist represents the allocation of jobs to a machine. Each job is represented as a dictionary containing 'start_time', 'end_time',
       'duration', and 'job_index'.
     """
     man_graph = graph.copy()
@@ -96,9 +92,8 @@ def leveled_topological_sort(graph: rx.PyDiGraph):
     their dependencies. The sorting is "leveled" in the sense that it groups nodes by their distance
     from the start nodes (with no dependencies).
 
-    Parameters:
+    Args:
     - graph (rx.PyDiGraph): A directed graph where nodes represent tasks and edges represent dependencies.
-
     Returns:
     - None: This function modifies the graph in-place and does not return a value.
     """
@@ -125,12 +120,11 @@ def earliest_start_time_optimized(task, graph, schedule):
     This function examines a task's dependencies within a directed graph and determines the
     earliest time the task can start, based on the completion times of its dependencies.
 
-    Parameters:
+    Args:
     - task (int/str): The identifier for the task whose earliest start time is being calculated.
     - graph (Directed Graph): The graph representing task dependencies.
     - schedule (dict): A dictionary where keys are task identifiers and values are dictionaries
-                       containing 'end_time' among other scheduling details.
-
+    containing 'end_time' among other scheduling details.
     Returns:
     - int: The earliest start time for the given task.
     """
@@ -151,13 +145,11 @@ def allocate_jobs_to_machines_with_heuristic_rx(graph: (rx.PyDiGraph, dict), num
     then allocates jobs to machines aiming to minimize overall completion time. It uses an
     optimized approach for determining the earliest start time for each job based on its dependencies.
 
-    Parameters:
+    Args:
     - graph (tuple): A tuple containing a retworkx PyDiGraph and a dictionary of job durations.
     - num_machines (int, optional): The number of machines available for allocation. Defaults to 8.
-
     Returns:
-    - jobs (dict): A dictionary where each key is a job index and each value is a dictionary
-      containing 'start_time', 'end_time', 'duration', and 'machine_index' for the job.
+    - jobs (dict): A dictionary where each key is a job index and each value is a dictionary containing 'start_time', 'end_time', 'duration', and 'machine_index' for the job.
     """
     man_graph = graph[0].copy()
     durations = graph[1]
@@ -200,14 +192,12 @@ def transform_allocation_format(jobs, num_machines):
     lists of dictionaries, where each sublist represents the jobs allocated to a machine, sorted
     by their start times.
 
-    Parameters:
+    Args:
     - jobs (dict): A dictionary where each key is a job index and each value is a dictionary
-                   containing 'start_time', 'end_time', 'duration', and 'machine_index' for the job.
+    containing 'start_time', 'end_time', 'duration', and 'machine_index' for the job.
     - num_machines (int): The number of machines jobs are allocated to.
-
     Returns:
-    - machines (list of lists of dicts): A nested list where each sublist represents the allocation
-      of jobs to a machine, sorted by their start time. Each job is represented as a dictionary containing
+    - machines (list of lists of dicts): A nested list where each sublist represents the allocation of jobs to a machine, sorted by their start time. Each job is represented as a dictionary containing
       'start_time', 'end_time', 'duration', and 'job_index'.
     """
     # Initialize a list for each machine
@@ -240,7 +230,7 @@ def heft(graph: nx.DiGraph, num_machines: int):
         num_machines (int): The number of machines available for executing these tasks.
 
     Returns:
-        Any: A schedule that is a list of lists. Each sublist represents the schedule for a machine, containing dictionaries with keys 'start_time', 'end_time', 'duration', and 'job_index', detailing each task's scheduling.
+    Any: A schedule that is a list of lists. Each sublist represents the schedule for a machine, containing dictionaries with keys 'start_time', 'end_time', 'duration', and 'job_index', detailing each task's scheduling.
     """
     tasks = list(graph.nodes)
     ranks = calculate_ranks(graph)
@@ -271,7 +261,7 @@ def earliest_start_time(task, graph, schedule):
         schedule (Any): The current schedule of tasks on machines.
 
     Returns:
-        float: The earliest time at which the specified task can start executing.
+    float: The earliest time at which the specified task can start executing.
     """
     dependencies = list(graph.predecessors(task))
     if not dependencies:
@@ -287,7 +277,7 @@ def calculate_ranks(graph: nx.DiGraph):
         graph (nx.DiGraph): The DAG of tasks.
 
     Returns:
-        dict: A dictionary mapping each task to its rank.
+    dict: A dictionary mapping each task to its rank.
     """
     ranks = {}
     for task in nx.topological_sort(graph):
@@ -305,7 +295,7 @@ def calculate_rank(task, ranks, graph, memo={}):
         memo (dict, optional): A dictionary used for memoization of task ranks. Defaults to {}.
 
     Returns:
-        Any: The rank of the specified task.
+    Any: The rank of the specified task.
     """
     if task in ranks:
         return ranks[task]

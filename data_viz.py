@@ -63,7 +63,7 @@ def calculate_schedule(dag: nx.DiGraph, num_machines, calculate_criteria = True)
     schedule_1 = algorithm.heft(dag_sc1 ,num_machines=num_machines)
     with open("intermediates/schedule_1.json", "w") as file_handle:
         json.dump(schedule_1, file_handle)
-    schedule_2 = algorithm.allocate_jobs_to_machines_with_heuristic(dag_sc2 ,num_machines=num_machines)
+    schedule_2 = algorithm.allocate_jobs_to_machines_nx(dag_sc2 ,num_machines=num_machines)
     with open("intermediates/schedule_2.json", "w") as file_handle:
         json.dump(schedule_2, file_handle)
     overlap_schedule_1 = verification.verifcation_overlap_machine(schedule_1)

@@ -11,7 +11,18 @@ import configs
 
 
 def create_pool(batch_client, name_pool, cmd_s_task=None, rule_scale_pool=None):
+    """
+    Creates a new pool in Azure Batch with a specified name, optional startup task command, and optional autoscale formula.
 
+    The pool is configured to use Ubuntu Server 20.04 LTS images from Canonical and is set for auto-scaling based on
+    the provided formula. Inter-node communication is enabled.
+
+    Args:
+        batch_client: The Batch service client to interact with the Azure Batch service.
+        name_pool (str): The name identifier for the new pool.
+        cmd_s_task (str, optional): The command line to execute as a startup task for each node in the pool. Defaults to None.
+        rule_scale_pool (str, optional): The autoscale formula to apply for scaling the pool. Defaults to None.
+    """
     #parameter image node
     param_image = models.VirtualMachineConfiguration(
         image_reference = models.ImageReference(
@@ -39,6 +50,18 @@ def create_pool(batch_client, name_pool, cmd_s_task=None, rule_scale_pool=None):
 
 
 def create_job(batch_client, name_job, name_pool, cmd_prep_task=None):
+    """
+    Creates a new job in Azure Batch with a specified job and pool name, and an optional preparation task command.
+
+    The job is configured to run in a pool identified by `name_pool`. A preparation task with the specified command
+    is added to the job if `cmd_prep_task` is provided.
+
+    Args:
+        batch_client: The Batch service client to interact with the Azure Batch service.
+        name_job (str): The name identifier for the new job.
+        name_pool (str): The name of the pool where the job will run.
+        cmd_prep_task (str, optional): The command line to execute as a preparation task for the job. Defaults to None.
+    """
 
     user = models.UserIdentity(
     auto_user = models.AutoUserSpecification(
@@ -63,7 +86,22 @@ def create_job(batch_client, name_job, name_pool, cmd_prep_task=None):
     
 
 def create_task(batch_client, name_job, cmd, name_task, param_multi_inst=None):
+    """
+    Creates a new task in a specified Azure Batch job with a command line to execute and optional multi-instance settings.
 
+    The task's output files are configured to upload to a blob container upon task completion. The function also creates
+    a JSON file to store output file destinations.
+
+    Args:
+        batch_client: The Batch service client to interact with the Azure Batch service.
+        name_job (str): The name of the job where the task will be added.
+        cmd (str): The command line to execute for the task.
+        name_task (str): The name identifier for the new task.
+        param_multi_inst (models.MultiInstanceSettings, optional): Settings for running the task across multiple compute nodes. Defaults to None.
+
+    Returns:
+        models.OutputFileDestination: The destination for the task's output files.
+    """
     current_date = time.localtime()[0:5]
     current_date = "{0}{1}{2}{3}{4}".format(
                                             current_date[0],current_date[1],
@@ -100,6 +138,14 @@ def create_task(batch_client, name_job, cmd, name_task, param_multi_inst=None):
 
 
 def download_files_from_blob(blob_service_client:BlobServiceClient):
+    """
+    Downloads all files from a specified Azure Blob Storage container named "results".
+
+    Each file from the container is downloaded to a local directory named "./results", preserving the blob structure.
+
+    Args:
+        blob_service_client (BlobServiceClient): The client to interact with the Azure Blob Storage service.
+    """
     container_client = blob_service_client.get_container_client("results")
     
     blobs = container_client.list_blobs()
