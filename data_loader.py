@@ -1,3 +1,4 @@
+# Import necessary libraries
 import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.drawing.nx_pydot import graphviz_layout
@@ -77,8 +78,7 @@ def load_dag_from_json(filepath: str):
         graph.add_nodes_from(node_indices)
         graph.add_edges_from(edges)
     elapsed = timeit.default_timer() - start_time
-    print("Loading file took : ", elapsed) # TODO: timeit for JSON file loading
-    
+    print("Loading file took : ", elapsed)
     return graph
         
 #@profile    
@@ -103,7 +103,7 @@ def load_dag_from_json_rx(filepath):
         for node_id, node_data in nodes.items():
             time_parts = node_data["Data"].split(':')
             duration = timedelta(hours=int(time_parts[0]), minutes=int(time_parts[1]), seconds=float(time_parts[2]))
-            durations[int(node_id)] = duration  # Storing duration in the durations dictionary
+            durations[int(node_id)] = duration
             nodes_list.append(int(node_id))
             edges_list += [(dep, int(node_id)) for dep in node_data["Dependencies"]]
     del object_data
@@ -116,8 +116,7 @@ def load_dag_from_json_rx(filepath):
     graph.add_edges_from_no_data(new_edges_list)
     del new_edges_list
     elapsed = timeit.default_timer() - start_time
-    print("Loading file took:", elapsed)  # TODO: timeit for JSON file loading
-
+    print("Loading file took:", elapsed)
     return graph, durations
 
 if __name__ == "__main__":
