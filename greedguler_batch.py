@@ -7,8 +7,11 @@ from azure.batch import models
 from azure.batch.batch_auth import SharedKeyCredentials
 from azure.storage.blob import BlobServiceClient, BlobClient
 import json
-import configs
 
+try:
+    import configs              
+except ImportError:
+    print("You need the configs module with the Azure credentials.")
 
 def create_pool(batch_client, name_pool, cmd_s_task=None, rule_scale_pool=None):
     """
